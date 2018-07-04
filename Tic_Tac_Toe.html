@@ -1,0 +1,208 @@
+<html>
+<head>
+
+    <style type="text/css">
+	table{
+		padding:50px;
+		border:solid thick red;
+		font-size: 60px;
+	}
+		td{
+			background-color: orange;
+			size:40px;
+			width: 80px;
+			height: 80px;
+			text-align: center;
+		}
+		p{
+			text-align: center;
+			font-size: 35px;
+			color:black;
+			text-decoration: bold;
+		}
+		button{
+			width:80px;
+			height:30px;
+		}
+	</style>
+    
+    <script>
+        var cur_move='X';
+        var first=1;
+        var time=5;
+		var game_over=0;
+		var row_arr=[];
+		var col_arr=[];
+		var turn_arr=[];
+		var arr_index=-1;
+		var undo_count=0;
+		var redo_count=0;
+        function displayTurn()
+		{
+			var turn_name=document.getElementById("p1");
+			turn_name.innerHTML=cur_move+"'s Turn";
+		}
+        function toggleTurn()
+        {
+            if(cur_move=="X")
+                cur_move="O"
+            else
+                cur_move="X"
+			displayTurn();
+        }
+        
+        
+        function displayWinner()
+        {
+            var winner_name=document.getElementById("p1");
+            winner_name.innerHTML="Winner is: "+cur_move;
+        }
+        
+        function checkGameOver()
+        {
+            table=document.getElementById("gametable");
+            for(var i=0;i<3;i++)
+                        {
+                             if(table.rows[i].cells[0].innerHTML==cur_move&&table.rows[i].cells[1].innerHTML==cur_move&&table.rows[i].cells[2].innerHTML==cur_move)
+                            {
+                                displayWinner();
+                                return true;
+                            }
+                        }
+                    for(var i=0;i<3;i++)
+                        {
+                             if(table.rows[0].cells[i].innerHTML==cur_move&&table.rows[1].cells[i].innerHTML==cur_move&&table.rows[2].cells[i].innerHTML==cur_move)
+                            {
+                                displayWinner();
+                                return true;
+                            }
+                        }
+            if(table.rows[0].cells[0].innerHTML==cur_move&&table.rows[1].cells[1].innerHTML==cur_move&&table.rows[2].cells[2].innerHTML==cur_move)
+			{
+				displayWinner();
+				return true;
+			}
+			if(table.rows[0].cells[2].innerHTML==cur_move&&table.rows[1].cells[1].innerHTML==cur_move&&table.rows[2].cells[0].innerHTML==cur_move)
+			{
+				displayWinner();
+				return true;
+            }
+         return false;   
+        }
+		function displayTimer()
+		{
+			var display_time=document.getElementById("p2");
+			display_time.innerHTML="Game reloads in "+time;
+			time--;
+			if(time==-1)
+			{
+							game_over=0;
+							time=5;
+			}
+		}
+		function boxesFull()
+		{
+			table=document.getElementById("gametable");
+			for(var i=0;i<3;i++)
+			{
+				for(var j=0;j<3;j++)
+				{
+					if(table.rows[i].cells[j].innerHTML=="")
+					{
+						return false;
+					}
+				}
+			}
+			var boxes_full=document.getElementById("p1");
+			boxes_full.innerHTML="NO WINNER!";
+			return true;
+		}
+		function changeLabel(cell,x,y)
+        {
+		
+            if(game_over==0)
+			{
+				if(cell.innerHTML=="")
+                {
+					arr_index++;//Since initialized with -1					
+					row_arr[arr_index]=x;
+					col_arr[arr_index]=y;
+					turn_arr[arr_index]=cur_move;
+					
+                    cell.innerHTML=cur_move;
+					undo_count=0;
+                    var ret1=checkGameOver();
+					if(!ret1)
+					var ret2=boxesFull();
+					
+                    if(ret1||ret2)
+                        {
+							game_over=1;
+							setTimeout("location.reload()",6000);
+							setInterval(displayTimer,1000);
+                            return;
+                        }
+						toggleTurn();
+                }
+			}
+        }
+		
+		function performUndo()
+		{
+			if(game_over==0)
+			{
+				undo_count++;
+				table=document.getElementById("gametable");
+				r=row_arr[arr_index];
+				c=col_arr[arr_index];
+				val=turn_arr[arr_index];
+				table.rows[r].cells[c].innerHTML="";
+				arr_index--;
+				toggleTurn();
+			}
+		}
+		function performRedo()
+		{
+			if(undo_count!=0 &&game_over==0)
+			{
+				undo_count--;
+				arr_index++;
+				table=document.getElementById("gametable");
+				r=row_arr[arr_index];
+				c=col_arr[arr_index];
+				val=turn_arr[arr_index];
+				table.rows[r].cells[c].innerHTML=val;
+				toggleTurn();
+			}
+		}
+		
+    </script>
+</head>
+<body>
+    <center>
+	<p>Tic-Tac-Toe</p>
+    <table id="gametable">
+	<tr>
+			<td onclick="changeLabel(this,0,0)"></td>
+			<td onclick="changeLabel(this,0,1)"></td>
+			<td onclick="changeLabel(this,0,2)"></td>
+	</tr>
+    <tr>
+			<td onclick="changeLabel(this,1,0)"></td>
+			<td onclick="changeLabel(this,1,1)"></td>
+			<td onclick="changeLabel(this,1,2)"></td>
+	</tr>
+	<tr>
+			<td onclick="changeLabel(this,2,0)"></td>
+			<td onclick="changeLabel(this,2,1)"></td>
+			<td onclick="changeLabel(this,2,2)"></td>
+	</tr>
+    </table>
+	<br>
+	<button onclick="performUndo()" >Undo</button>
+	<button onclick="performRedo()" >Redo</button>
+	<p id="p1">X's Turn</p>
+	<p id="p2"></p>
+    </center>
+</body>
+</html>
